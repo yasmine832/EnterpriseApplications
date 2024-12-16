@@ -1,10 +1,7 @@
 package entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "products")
 @Schema(description = "Represents a product available for rental")
@@ -30,18 +27,17 @@ public class Product {
     private String name;
 
     @Schema(description = "Category of the product.", example = "Lighting")
+    @NotNull(message = "Category is required")
     @Column(nullable = false)
-    @NotBlank(message = "Category is required")
     @Enumerated(EnumType.STRING)
     private ProductCategory category;
 
-    @Positive(message = "Daily rental price must be positive")
-    @Schema(description = "Price per day.", example = "50.0")
-    @Column(nullable = false)
+    @Schema(description = "Cost per day.", example = "50.0")
+    @NotNull(message = "Price is required")
     private double dailyRentalPrice;
 
     @Schema(description = "Stock quantity available.", example = "10")
-    @Column(nullable = false)
+    @NotNull(message = "Quantity is required")
     @Min(0)// can't be negative
     private int stock;
 

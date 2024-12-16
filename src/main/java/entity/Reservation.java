@@ -1,10 +1,6 @@
 package entity;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,15 +13,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.JoinTable;
 import java.util.List;
-import jakarta.persistence.Column;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.PrePersist;
 
-@Getter
-@Setter
+
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -71,7 +66,7 @@ public class Reservation {
     @Schema(description = "Date and time when the reservation was made", example = "2024-12-14T14:30:00")
     private LocalDateTime createdAt;
 
-    @PrePersist // to automatically set the createdAt date when a new reservation is created
+    @PrePersist // to automatically set the createdAt date when a new reservation is created, hidden from the API and set state to PENDING
     @Schema(hidden = true)
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
