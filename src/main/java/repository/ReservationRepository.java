@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface ReservationRepository  extends JpaRepository<Reservation, Long> {
     List<Reservation> findByUser(User user);
     //List<Reservation> findByStartDate(LocalDate startDate); TODO
+}
 
