@@ -1,6 +1,5 @@
 package entity;
 
-import lombok.*;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,10 +19,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.PrePersist;
 
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "reservations")
 @Schema(description = "Represents a student's equipment reservation")
@@ -73,4 +68,66 @@ public class Reservation {
         this.status = ReservationStatus.PENDING;
     }
 
+    public Reservation() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public @NotNull(message = "User is required") User getUser() {
+        return user;
+    }
+
+    public void setUser(@NotNull(message = "User is required") User user) {
+        this.user = user;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
+    }
+
+    public @NotNull LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(@NotNull LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public @NotNull LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(@NotNull LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public Double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(Double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public ReservationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReservationStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

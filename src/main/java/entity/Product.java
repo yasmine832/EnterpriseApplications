@@ -2,16 +2,8 @@ package entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "products")
 @Schema(description = "Represents a product available for rental")
@@ -47,4 +39,54 @@ public class Product {
     @Schema(description = "Description of the product.", example = "A bright LED light for all your lighting needs.")
     @Size(max = 255)
     private String description;
+
+    public Product() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public @NotBlank @Size(max = 100) String getName() {
+        return name;
+    }
+
+    public void setName(@NotBlank @Size(max = 100) String name) {
+        this.name = name;
+    }
+
+    public @NotNull(message = "Category is required") ProductCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(@NotNull(message = "Category is required") ProductCategory category) {
+        this.category = category;
+    }
+
+    @NotNull(message = "Price is required")
+    public double getDailyRentalPrice() {
+        return dailyRentalPrice;
+    }
+
+    public void setDailyRentalPrice(@NotNull(message = "Price is required") double dailyRentalPrice) {
+        this.dailyRentalPrice = dailyRentalPrice;
+    }
+
+    @NotNull(message = "Quantity is required")
+    @Min(0)
+    public int getStock() {
+        return stock;
+    }
+
+    public void setStock(@NotNull(message = "Quantity is required") @Min(0) int stock) {
+        this.stock = stock;
+    }
+
+    public @Size(max = 255) String getDescription() {
+        return description;
+    }
+
+    public void setDescription(@Size(max = 255) String description) {
+        this.description = description;
+    }
 }
