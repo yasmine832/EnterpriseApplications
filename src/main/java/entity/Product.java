@@ -1,8 +1,8 @@
 package entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Entity
 @Table(name = "products")
@@ -14,8 +14,8 @@ public class Product {
     private Long id;
 
     @Schema(description = "Name of the product.", example = "LED Light")
-    @NotBlank
-    @Size(max = 100)
+    @NotBlank(message = "Name is required")
+    @Size(max = 100, message = "Name must be less than 100 characters")
     private String name;
 
     @Schema(description = "Category of the product.", example = "Lighting")
@@ -26,6 +26,7 @@ public class Product {
 
     @Schema(description = "Cost per day.", example = "50.0")
     @NotNull(message = "Price is required")
+    @PositiveOrZero
     private double dailyRentalPrice;
 
     @Schema(description = "Stock quantity available.", example = "10")
@@ -64,11 +65,12 @@ public class Product {
     }
 
     @NotNull(message = "Price is required")
+    @PositiveOrZero
     public double getDailyRentalPrice() {
         return dailyRentalPrice;
     }
 
-    public void setDailyRentalPrice(@NotNull(message = "Price is required") double dailyRentalPrice) {
+    public void setDailyRentalPrice(@NotNull(message = "Price is required") @PositiveOrZero double dailyRentalPrice) {
         this.dailyRentalPrice = dailyRentalPrice;
     }
 
