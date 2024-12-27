@@ -1,8 +1,11 @@
 package entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -34,12 +37,15 @@ public class Product {
     @Min(0)// can't be negative
     private int stock;
 
-    //@Column(name = "is_available")
-    //    private boolean isAvailable; => make emthod in service layer? TODO
-
     @Schema(description = "Description of the product.", example = "A bright LED light for all your lighting needs.")
-    @Size(max = 255)
+    @Size(max = 255, message = "Description must be less than 255 characters")
     private String description;
+
+    @Schema(description = "Reservations made for this product.")
+    @ManyToMany(mappedBy = "products")
+    @JsonIgnore
+    private List<Reservation> reservations;
+
 
     public Product() {
     }
@@ -91,4 +97,9 @@ public class Product {
     public void setDescription(@Size(max = 255) String description) {
         this.description = description;
     }
+
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
 }
