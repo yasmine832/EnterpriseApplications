@@ -1,14 +1,11 @@
 package entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
-import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -55,7 +52,6 @@ public class User {
         this.createdAt = LocalDateTime.now();
         this.roles = Set.of("ROLE_STUDENT"); // Default role
     }
-
 
     //registration
     //TODO

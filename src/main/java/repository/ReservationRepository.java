@@ -1,24 +1,22 @@
 package repository;
 
 import entity.Reservation;
-import entity.ReservationStatus;
-import entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReservationRepository  extends JpaRepository<Reservation, Long> {
-    List<Reservation> findByUser(User user);
-    List<Reservation> findByCreatedAt(LocalDateTime createdAt);
-    List<Reservation> findByUserAndCreatedAt(User user, LocalDateTime createdAt);
-    List<Reservation> findByUserAndStartDate( User user, LocalDate startDate);
-    List<Reservation> findByUserAndEndDate( User user, LocalDate endDate);
-    List<Reservation> findByUserAndStatus(User user, ReservationStatus status);
+    List<Reservation> findByUserId(Long userId);
 
+    // find reservations overlapping with date range
+    @Query("SELECT r FROM Reservation r WHERE " +
+            "((r.startDate <= :endDate) AND (r.endDate >= :startDate))")
+    List<Reservation> findByDateRange(@Param("startDate") LocalDate startDate,
+                                      @Param("endDate") LocalDate endDate);
 
 }
-

@@ -1,22 +1,12 @@
 package entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.JoinTable;
-import java.util.List;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.PrePersist;
+import java.util.List;
 
 
 @Entity
@@ -34,7 +24,7 @@ public class Reservation {
     @Schema(description = "The user who made the reservation")
     private User user;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER) // load aLL products when loading a reservation
     @JoinTable(
             name = "reservation_products",
             joinColumns = @JoinColumn(name = "reservation_id"),
@@ -43,9 +33,10 @@ public class Reservation {
     @Schema(description = "Products included in the reservation")
     private List<Product> products;
 
+
     @NotNull
     @Schema(description = "Start date of the reservation", example = "2024-12-14")
-    private LocalDate startDate; //met isavailable bool method (hotels)
+    private LocalDate startDate;
 
     @NotNull
     @Schema(description = "End date of the reservation", example = "2024-12-16")
