@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import service.ReservationService;
 
@@ -19,6 +20,7 @@ import java.util.List;
 @Schema(description = "Controller for managing reservations")
 @Tag(name = "Reservation Management", description = "APIs for managing reservations")
 @RequestMapping("api/reservations")
+@PreAuthorize("isAuthenticated()")
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -54,6 +56,7 @@ public class ReservationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/user/{userId}")
     @Operation(summary = "Get all reservations for a specific user")
     public ResponseEntity<List<Reservation>> getUserReservations(@PathVariable Long userId) {

@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -38,12 +39,26 @@ public class SecurityConfig {
                         //.loginPage("/api/auth/login"))//todo for custom
                         .defaultSuccessUrl("/api/auth/current", true) //Todoo "/home"
                         .failureUrl("/login?error=true")
+                )
+
+
+                // logout behavior
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessUrl("/api/auth/login")
+                        // Remove the session cookie from client browser
+                        .deleteCookies("JSESSIONID") //springs default session cookie name
+                        // Clear  server-side session data
+                        .invalidateHttpSession(true)//to ensure no session data remains after logout
+                )
+
+                // Session management configuration
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)  // Create session when needed
+                        .invalidSessionUrl("/api/auth/login")  // Redirect on invalid session
+                        .maximumSessions(1)  // Prevent multiple logins
+                        .maxSessionsPreventsLogin(false)  // New login expires old session
                 );
-
-        //.formLogin(form -> form.disable())
-        //            .httpBasic(basic -> basic.disable());
-
-        //sessies todo
 
         return http.build();
     }

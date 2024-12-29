@@ -4,6 +4,7 @@ import dto.RegisterDTO;
 import entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,4 +37,13 @@ public class UserController {
     public User getCurrentUser(@AuthenticationPrincipal User user) {
         return user;
     }
+
+
+    @Operation(summary = "Logout current user")
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    public void logout(HttpServletRequest request) {
+        //todo delete
+    }
+
 }
