@@ -56,11 +56,8 @@ public class User implements UserDetails { //interface required by spring securi
     @PrePersist // to automatically set the createdAt date when a new user is created
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.roles = Set.of("ROLE_STUDENT"); // Default role
+        this.roles = Set.of("ROLE_CLIENT"); // Default role
     }
-
-    //registration
-    //TODO
 
     public User() {
     }
@@ -113,5 +110,25 @@ public class User implements UserDetails { //interface required by spring securi
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
     }
 }
