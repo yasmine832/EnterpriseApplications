@@ -6,5 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public enum ReservationStatus {
     PENDING,
     CONFIRMED,
-    CANCELLED
+    CANCELLED,
+    //ACTIVE,  // During rental period
+    //RETURNED, //Items returned successfully
+    //OVERDUE, // Items not returned on time //todo
 }
