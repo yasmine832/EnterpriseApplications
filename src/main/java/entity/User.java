@@ -6,14 +6,20 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+//https://docs.spring.io/spring-security/reference/servlet/authentication/passwords/index.html)
 @Entity
 @Schema(description = "Represents a user of the platform.")
 @Table(name = "users")
-public class User {
+public class User implements UserDetails { //interface required by spring security
 
     @jakarta.persistence.Id
     @Id
@@ -77,6 +83,13 @@ public class User {
     public void setEmail(@NotBlank(message = "Email is required") @Email(message = "Email should be valid format") String email) {
         this.email = email;
     }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role))
+                .collect(Collectors.toSet());
+    }//since roles are stored as strings, we need to convert them to SimpleGrantedAuthority objects for spring security system
 
     public @NotBlank(message = "Password is required") @Size(min = 6, message = "Password must be at least 6 characters") String getPassword() {
         return password;
