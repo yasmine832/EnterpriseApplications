@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import service.ProductService;
 
@@ -22,8 +23,6 @@ import java.util.List;
 @RequestMapping("api/products")
 public class ProductController {
 
-    //crud operations only for admins, besides dispalying //TODO @PreAuthorize("hasRole('ROLE_ADMIN')")
-
     private final ProductService productService;
 
     @Autowired
@@ -31,6 +30,7 @@ public class ProductController {
         this.productService = productService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     @Operation(summary = "Create a new product")
     public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
@@ -58,6 +58,7 @@ public class ProductController {
         return productService.getAllProducts(startDate, endDate, category);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     @Operation(summary = "Update a product")
     public ResponseEntity<Product> updateProduct(
@@ -66,6 +67,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.updateProduct(id, product));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a product")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
