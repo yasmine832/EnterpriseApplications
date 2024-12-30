@@ -2,6 +2,8 @@ package controller;
 
 import dto.ReservationDTO;
 import entity.Reservation;
+import entity.ReservationStatus;
+import entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,10 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import repository.ReservationRepository;
 import service.ReservationService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Schema(description = "Controller for managing reservations")
@@ -24,10 +30,12 @@ import java.util.List;
 public class ReservationController {
 
     private final ReservationService reservationService;
+    private final repository.ReservationRepository reservationRepository;
 
     @Autowired
-    public ReservationController(ReservationService reservationService) {
+    public ReservationController(ReservationService reservationService, ReservationRepository reservationRepository) {
         this.reservationService = reservationService;
+        this.reservationRepository = reservationRepository;
     }
 
     @Transactional
@@ -43,15 +51,51 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getReservation(id));
     }
 
+    @GetMapping("/my-reservations")
+    @Operation(summary = "Get all reservations for the current user (optionally filtered by status)")
+    public ResponseEntity<List<Reservation>> getMyReservations(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) ReservationStatus status) {
+        List<Reservation> reservations = reservationRepository.findByUserId(user.getId());
+        if (status != null) {
+            reservations = reservations.stream()
+                    .filter(r -> r.getStatus() == status)
+                    .collect(Collectors.toList());
+        }
+        return ResponseEntity.ok(reservations);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    @Operation(summary = "Get all reservations")
-    public ResponseEntity<List<Reservation>> getAllReservations() {
-        return ResponseEntity.ok(reservationService.getAllReservations());
+    @Operation(summary = "Get all reservations (optionally filtered by status)")
+    public ResponseEntity<List<Reservation>> getAllReservations(
+            @RequestParam(required = false) ReservationStatus status) {
+        List<Reservation> reservations = reservationService.getAllReservations();
+        if (status != null) {
+            reservations = reservations.stream()
+                    .filter(r -> r.getStatus() == status)
+                    .collect(Collectors.toList());
+        }
+        return ResponseEntity.ok(reservations);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Cancel a reservation")
-    public ResponseEntity<Void> cancelReservation(@PathVariable Long id) {
+    @Operation(summary = "Cancel a reservation (user's own or any for admin)")
+    public ResponseEntity<Void> cancelReservation(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user,
+            @RequestParam boolean confirm) {
+        if (!confirm) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cancellation requires confirmation");
+        }
+
+        Reservation reservation = reservationService.getReservation(id);
+        boolean isAdmin = user.getRoles().contains("ROLE_ADMIN");
+
+        if (!isAdmin && !reservation.getUser().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Can only cancel own reservations");
+        }
+
         reservationService.cancelReservation(id);
         return ResponseEntity.noContent().build();
     }
@@ -62,4 +106,6 @@ public class ReservationController {
     public ResponseEntity<List<Reservation>> getUserReservations(@PathVariable Long userId) {
         return ResponseEntity.ok(reservationService.getUserReservations(userId));
     }
+
+
 }
