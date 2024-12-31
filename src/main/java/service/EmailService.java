@@ -65,4 +65,34 @@ public class EmailService {
                 reservation.getStatus() //TODO
         );
     }
+
+    public void sendOverdueNotification(Reservation reservation) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(reservation.getUser().getEmail());
+        message.setSubject("OVERDUE: Reservation #" + reservation.getId());
+        message.setText(String.format("""
+                        Dear %s,
+                        
+                        Your reservation #%d was due to be returned on %s.
+                        Please return the items as soon as possible to avoid additional charges.
+                        
+                        Items to return:
+                        %s
+                        
+                        Thank you for your cooperation.
+                        """,
+                reservation.getUser().getUsername(),
+                reservation.getId(),
+                reservation.getEndDate(),
+                reservation.getProducts().stream()
+                        .map(Product::getName)
+                        .collect(Collectors.joining(", ")) // comma-separated list of product names
+                //TODO
+
+        ));
+
+        mailSender.send(message);
+    }
+
 }

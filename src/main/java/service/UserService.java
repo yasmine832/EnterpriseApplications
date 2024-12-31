@@ -79,13 +79,13 @@ public class UserService implements UserDetailsService {
 
         user.setUsername(updatedUser.getUsername());
         user.setEmail(updatedUser.getEmail());
-        if (updatedUser.getPassword() != null) {
+        if (updatedUser.getPassword() != null) { //only update password if new one provided
             user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }//todo confirm password
         return userRepository.save(user);
     }
 
-    //delete user
+    //delete user and cancel all their reservations
     public void deleteUser(Long userId, Long requestingUserId, boolean confirmed) {
         if (!confirmed) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deletion requires confirmation");

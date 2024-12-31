@@ -7,6 +7,7 @@ import entity.Reservation;
 import entity.ReservationStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import repository.ProductRepository;
@@ -15,6 +16,7 @@ import repository.ReservationRepository;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -37,6 +39,16 @@ public class ReservationService {
         this.emailService = emailService;
     }
 
+    /**
+     * Creates a new reservation after validating dates and product availability.
+     * Calculates total price based on rental duration and product prices.
+     * Initial status is PENDING until payment is confirmed.
+     *
+     * @param reservationDTO Contains user ID, product quantities, and dates
+     * @return Created and saved reservation
+     * @throws ResponseStatusException if dates invalid or insufficient stock
+     */
+    // Create a new reservation //TODO
     public Reservation createReservation(ReservationDTO reservationDTO) {
         validateDates(reservationDTO.getStartDate(), reservationDTO.getEndDate());
 
@@ -56,7 +68,7 @@ public class ReservationService {
         reservation.setUser(userReservationHelperService.getUser(reservationDTO.getUserId()));
         reservation.setStartDate(reservationDTO.getStartDate());
         reservation.setEndDate(reservationDTO.getEndDate());
-        reservation.setStatus(ReservationStatus.CONFIRMED);//TODO
+        reservation.setStatus(ReservationStatus.PENDING);//TODO
 
         List<Product> reservedProducts = new ArrayList<>();
         double totalPrice = 0;
@@ -75,7 +87,6 @@ public class ReservationService {
 
         reservation.setProducts(reservedProducts);
         reservation.setTotalPrice(totalPrice);
-        emailService.sendReservationConfirmation(reservation);
 
         return reservationRepository.save(reservation);
     }//TODO
@@ -92,8 +103,14 @@ public class ReservationService {
     }
 
     /**
-     * Gets total quantity of a product reserved for a date range
-     * Counts products in all non-cancelled reservations that overlap with the range
+     * Gets total quantity of a product reserved for a date range.
+     * Counts products in all non-cancelled reservations that overlap with the range.
+     * Used to check availability for new reservations.
+     *
+     * @param productId Product to check
+     * @param startDate Start of period
+     * @param endDate End of period
+     * @return Total quantity reserved for this period
      */
     private int getReservedQuantity(Long productId, LocalDate startDate, LocalDate endDate) {
         List<Reservation> overlappingReservations = reservationRepository.findByDateRange(startDate, endDate);
@@ -132,4 +149,67 @@ public class ReservationService {
         int reservedQuantity = getReservedQuantity(product.getId(), startDate, endDate);
         return (product.getStock() - reservedQuantity) >= requestedQuantity;
     }
+
+    /**
+     * Confirms payment and updates reservation status.
+     * Sends confirmation email to user.
+     *
+     * @param reservationId ID of reservation to confirm
+     * @return Updated reservation
+     */
+    public Reservation confirmPayment(Long reservationId) {
+        Reservation reservation = getReservation(reservationId);
+
+        if (reservation.getStatus() != ReservationStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Can only confirm payment for pending reservations");
+        }//TODO
+
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        Reservation confirmed = reservationRepository.save(reservation);
+        emailService.sendReservationConfirmation(confirmed);
+        return confirmed;
+    }
+
+    /**
+     * Updates reservation statuses based on current date.
+     * - Changes CONFIRMED to ACTIVE on start date
+     * - Changes ACTIVE to OVERDUE after end date
+     */
+    @Scheduled(cron = "0 0 0 * * ?") // Run daily at midnight
+    public void updateReservationStatuses() {
+        LocalDate today = LocalDate.now();
+
+        List<Reservation> reservations = reservationRepository.findByStatusIn(
+                Arrays.asList(ReservationStatus.CONFIRMED, ReservationStatus.ACTIVE));
+
+        for (Reservation reservation : reservations) {
+            if (reservation.getStatus() == ReservationStatus.CONFIRMED
+                    && !today.isBefore(reservation.getStartDate())) {
+                reservation.setStatus(ReservationStatus.ACTIVE);
+            } else if (reservation.getStatus() == ReservationStatus.ACTIVE
+                    && today.isAfter(reservation.getEndDate())) {
+                reservation.setStatus(ReservationStatus.OVERDUE);
+                emailService.sendOverdueNotification(reservation);
+            }
+        }
+
+        reservationRepository.saveAll(reservations);
+    }
+
+    //process return of products
+    public Reservation processReturn(Long reservationId) {
+        Reservation reservation = getReservation(reservationId);
+
+        if (reservation.getStatus() != ReservationStatus.ACTIVE
+                && reservation.getStatus() != ReservationStatus.OVERDUE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Can only return active or overdue reservations");
+        }//todo
+
+        reservation.setStatus(ReservationStatus.RETURNED);
+        return reservationRepository.save(reservation);
+    }
 }
+
+

@@ -46,7 +46,9 @@ public class ProductService {
     }
 
     /**
-     * Retrieves all products, optionally filtering by availability or category.
+     * Gets all available products for a date range.
+     * If dates provided, shows only products with available stock.
+     * If category provided, filters by category.
      *
      * @param startDate the start date to check availability (nullable)
      * @param endDate   the end date to check availability (nullable)

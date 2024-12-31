@@ -110,5 +110,17 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getUserReservations(userId));
     }
 
+    @PutMapping("/{id}/confirm-payment")
+    @Operation(summary = "Confirm payment for reservation")
+    public ResponseEntity<Reservation> confirmPayment(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.confirmPayment(id));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}/return")
+    @Operation(summary = "Process return of rented items")
+    public ResponseEntity<Reservation> processReturn(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.processReturn(id));
+    } //TODO
 
 }
