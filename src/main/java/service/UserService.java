@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import repository.UserRepository;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Schema(description = "Service for managing users")
@@ -21,12 +24,14 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserReservationHelperService UserReservationHelperService;
+    private final UserReservationHelperService userReservationHelperService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserReservationHelperService UserReservationHelperService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserReservationHelperService UserReservationHelperService, UserReservationHelperService userReservationHelperService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.UserReservationHelperService = UserReservationHelperService;
+        this.userReservationHelperService = userReservationHelperService;
     }
 
     //get all users
@@ -54,6 +59,7 @@ public class UserService implements UserDetailsService {
         user.setUsername(registerDTO.getUsername());
         user.setEmail(registerDTO.getEmail());
         user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
+        user.setRoles(Collections.singleton("ROLE_STUDENT"));
 
         return userRepository.save(user);
     }
@@ -95,6 +101,23 @@ public class UserService implements UserDetailsService {
         UserReservationHelperService.cancelAllUserReservations(userId);
         userRepository.deleteById(userId);
     }
+
+    //update user roles
+    public User addAdminRole(Long userId, boolean isAdmin, Long adminId) {
+        User admin = userReservationHelperService.getUser(adminId);
+        if (!admin.getRoles().contains("ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can modify roles");
+        }
+
+        User user = userReservationHelperService.getUser(userId);
+        Set<String> roles = new HashSet<>(Collections.singleton("ROLE_STUDENT"));
+        if (isAdmin) {
+            roles.add("ROLE_ADMIN");
+        }
+        user.setRoles(roles);
+        return userRepository.save(user);
+    }
+
 
 
 }

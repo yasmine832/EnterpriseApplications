@@ -7,8 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import repository.ProductRepository;
-import repository.ReservationRepository;
 import repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -20,23 +20,23 @@ import java.util.Set;
 public class DummyDataLoader {
 
     @Bean
-    public CommandLineRunner loadDummyData(ProductRepository productRepository, UserRepository userRepository, ReservationRepository reservationRepository) {
+    public CommandLineRunner loadDummyData(ProductRepository productRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
 
             // Load Users
             User user1 = new User();
             user1.setUsername("john_doe");
             user1.setEmail("radio@mail.com");
-            user1.setPassword("password"); // TODO: Encrypt passwords for user1 and user2
-            user1.setRoles(new HashSet<>(Set.of("ROLE_USER")));
+            user1.setPassword(passwordEncoder.encode("password1"));  // Encrypt the password
+            user1.setRoles(new HashSet<>(Set.of("ROLE_ADMIN", "ROLE_STUDENT")));
             user1.setCreatedAt(LocalDateTime.now());
             userRepository.save(user1);
 
             User user2 = new User();
             user2.setUsername("jane_doe");
             user2.setEmail("rupi@mail.com");
-            user2.setPassword("password");
-            user2.setRoles(new HashSet<>(Set.of("ROLE_USER")));
+            user2.setPassword(passwordEncoder.encode("password1"));  // Encrypt the password
+            user2.setRoles(new HashSet<>(Set.of("ROLE_STUDENT")));
             user2.setCreatedAt(LocalDateTime.now());
             userRepository.save(user2);
 

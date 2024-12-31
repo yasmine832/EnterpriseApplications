@@ -56,7 +56,7 @@ public class User implements UserDetails { //interface required by spring securi
     @PrePersist // to automatically set the createdAt date when a new user is created
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.roles = Set.of("ROLE_CLIENT"); // Default role
+        // this.roles = Set.of("ROLE_CLIENT"); // Default role
     }
 
     public User() {

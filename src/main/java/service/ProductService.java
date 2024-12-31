@@ -115,6 +115,18 @@ public class ProductService {
                 .filter(p -> p.getId().equals(productId)) // Filter to include only products matching id
                 .count();
     }
+
+    // Search products by name or description and optionally by category
+    public List<Product> searchProducts(String query, ProductCategory category) {
+        List<Product> products = productRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                query, query);
+        if (category != null) {
+            products = products.stream()
+                    .filter(p -> p.getCategory() == category)
+                    .collect(Collectors.toList());
+        }
+        return products;
+    }
 }
 
 

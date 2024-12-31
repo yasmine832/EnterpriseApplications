@@ -59,7 +59,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Please confirm account deletion");
         }
-        userService.deleteUser(user.getId(), user.getId(), confirm);//TODO
+        userService.deleteUser(user.getId(), user.getId(), confirm);//TODO wat
         return ResponseEntity.noContent().build();
     }//TODO
 
@@ -81,6 +81,17 @@ public class UserController {
         userService.deleteUser(id, admin.getId(), confirm);
         return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{userId}/role/admin")
+    @Operation(summary = "Add admin role for user (Admin only)")
+    public ResponseEntity<User> addAdminRole(
+            @PathVariable Long userId,
+            @RequestParam boolean isAdmin,
+            @AuthenticationPrincipal User admin) {
+        return ResponseEntity.ok(userService.addAdminRole(userId, isAdmin, admin.getId()));
+    }
+
 
 
 }

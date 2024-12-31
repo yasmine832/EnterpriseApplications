@@ -47,7 +47,15 @@ public class ProductController {
     @Operation(summary = "Get product by name")
     public ResponseEntity<Product> getProductByName(@PathVariable String name) {
         return ResponseEntity.ok(productService.getProductByName(name));
-    }//todo search
+    }//TODO
+
+    @GetMapping("/search")
+    @Operation(summary = "Search products by name or description, optionally filtered by category")
+    public ResponseEntity<List<Product>> searchProducts(
+            @RequestParam String query,
+            @RequestParam(required = false) ProductCategory category) {
+        return ResponseEntity.ok(productService.searchProducts(query, category));
+    }
 
     @GetMapping
     @Operation(summary = "Get all products, optionally filtered by availability and/or category")
