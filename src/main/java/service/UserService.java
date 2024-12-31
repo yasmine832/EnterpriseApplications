@@ -1,7 +1,6 @@
 package service;
 
 import dto.RegisterDTO;
-import entity.ReservationStatus;
 import entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import repository.ReservationRepository;
 import repository.UserRepository;
 
 import java.util.List;
@@ -22,21 +20,13 @@ import java.util.List;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ReservationService reservationService;
-    private final ReservationRepository reservationRepository;
+    private final UserReservationHelperService UserReservationHelperService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, ReservationService reservationService, ReservationRepository reservationRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserReservationHelperService UserReservationHelperService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.reservationService = reservationService;
-        this.reservationRepository = reservationRepository;
-    }
-
-    public User getUser(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "User not found with id: " + id));
+        this.UserReservationHelperService = UserReservationHelperService;
     }
 
     //get all users
@@ -70,7 +60,7 @@ public class UserService implements UserDetailsService {
 
     //update user
     public User updateUser(Long id, User updatedUser) {
-        User user = getUser(id);
+        User user = UserReservationHelperService.getUser(id);
         // check unique
         if (!user.getUsername().equals(updatedUser.getUsername())
                 && userRepository.existsByUsername(updatedUser.getUsername())) {
@@ -95,22 +85,16 @@ public class UserService implements UserDetailsService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deletion requires confirmation");
         }
 
-        User requestingUser = getUser(requestingUserId);
+        User requestingUser = UserReservationHelperService.getUser(requestingUserId);
         boolean isAdmin = requestingUser.getRoles().contains("ROLE_ADMIN");
 
         if (!isAdmin && !userId.equals(requestingUserId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        cancelAllUserReservations(userId);
+        UserReservationHelperService.cancelAllUserReservations(userId);
         userRepository.deleteById(userId);
     }
 
-    //cancel reservation
-    private void cancelAllUserReservations(Long userId) {
-        reservationRepository.findByUserId(userId).stream()
-                .filter(r -> r.getStatus() != ReservationStatus.CANCELLED)// get all reservations that are not cancelled and cancel them
-                .forEach(r -> reservationService.cancelReservation(r.getId()));
-    }
 
 }

@@ -16,24 +16,22 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final ProductService productService;
-    private final UserService userService;
     private final ProductRepository productRepository;
+    private final UserReservationHelperService userReservationHelperService;
 
     @Autowired
     public ReservationService(ReservationRepository reservationRepository,
                               ProductService productService
-            , UserService userService, ProductRepository productRepository) {
+            , ProductRepository productRepository, UserReservationHelperService userReservationHelperService) {
         this.reservationRepository = reservationRepository;
         this.productService = productService;
-        this.userService = userService;
+        this.userReservationHelperService = userReservationHelperService;
         this.productRepository = productRepository;
     }
 
@@ -53,7 +51,7 @@ public class ReservationService {
 
         // Create reservation
         Reservation reservation = new Reservation();
-        reservation.setUser(userService.getUser(reservationDTO.getUserId()));
+        reservation.setUser(userReservationHelperService.getUser(reservationDTO.getUserId()));
         reservation.setStartDate(reservationDTO.getStartDate());
         reservation.setEndDate(reservationDTO.getEndDate());
         reservation.setStatus(ReservationStatus.PENDING);
@@ -123,28 +121,6 @@ public class ReservationService {
     private double calculateProductPrice(Product product, LocalDate startDate, LocalDate endDate) {
         long days = ChronoUnit.DAYS.between(startDate, endDate) + 1;
         return product.getDailyRentalPrice() * days;
-    }
-
-    public void cancelReservation(Long id) {
-        Reservation reservation = getReservation(id);
-        if (reservation.getStartDate().isBefore(LocalDate.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Cannot cancel a reservation that has already started");
-        }
-
-        // Count products to return correct quantities to stock
-        Map<Long, Long> productCounts = reservation.getProducts().stream()
-                .collect(Collectors.groupingBy(Product::getId, Collectors.counting()));
-
-        // Return stock for each product
-        productCounts.forEach((productId, count) -> {
-            Product product = productService.getProduct(productId);
-            product.setStock(product.getStock() + count.intValue());
-            productService.updateProduct(productId, product);
-        });
-
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        reservationRepository.save(reservation);
     }
 
     // Check if a product is available for reservation

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import repository.ReservationRepository;
 import service.ReservationService;
+import service.UserReservationHelperService;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,11 +32,13 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final repository.ReservationRepository reservationRepository;
+    private final UserReservationHelperService userReservationHelperService;
 
     @Autowired
-    public ReservationController(ReservationService reservationService, ReservationRepository reservationRepository) {
+    public ReservationController(ReservationService reservationService, ReservationRepository reservationRepository, UserReservationHelperService userReservationHelperService) {
         this.reservationService = reservationService;
         this.reservationRepository = reservationRepository;
+        this.userReservationHelperService = userReservationHelperService;
     }
 
     @Transactional
@@ -96,7 +99,7 @@ public class ReservationController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Can only cancel own reservations");
         }
 
-        reservationService.cancelReservation(id);
+        userReservationHelperService.cancelReservation(id);
         return ResponseEntity.noContent().build();
     }
 

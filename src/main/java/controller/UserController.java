@@ -11,8 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import repository.ReservationRepository;
-import repository.UserRepository;
+import service.UserReservationHelperService;
 import service.UserService;
 
 import java.util.List;
@@ -23,20 +22,18 @@ import java.util.List;
 @Tag(name = "User Management", description = "APIs for user managment")
 public class UserController {
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final ReservationRepository reservationRepository;
+    private final UserReservationHelperService userReservationHelperService;
 
     @Autowired
-    public UserController(UserService userService, UserRepository userRepository, ReservationRepository reservationRepository) {
+    public UserController(UserService userService, UserReservationHelperService userReservationHelperService) {
         this.userService = userService;
-        this.userRepository = userRepository;
-        this.reservationRepository = reservationRepository;
+        this.userReservationHelperService = userReservationHelperService;
     }
 
     @GetMapping("/profile")
     @Operation(summary = "Get user profile")
     public ResponseEntity<User> getProfileDetails(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(userService.getUser(user.getId()));
+        return ResponseEntity.ok(userReservationHelperService.getUser(user.getId()));
     }//todo
 
     //@GetMapping("/profile")
