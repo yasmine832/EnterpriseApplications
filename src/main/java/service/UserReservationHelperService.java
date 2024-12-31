@@ -31,13 +31,28 @@ public class UserReservationHelperService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
     }
 
-    //cancel reservation
+
+    //cancel all active reservations for specific user
     public void cancelAllUserReservations(Long userId) {
         reservationRepository.findByUserId(userId).stream()
                 .filter(r -> r.getStatus() != ReservationStatus.CANCELLED)// get all reservations that are not cancelled and cancel them
                 .forEach(r -> cancelReservation(r.getId()));
     }
 
+    /**
+     * Cancels a specific reservation and returns the reserved items back to available stock.
+     * The cancellation is only allowed if the reservation hasn't started yet.
+     * <p>
+     * Process:
+     * 1. Validates reservation exists and hasn't started
+     * 2. Groups products by ID and counts quantities
+     * 3. Returns products to available stock
+     * 4. Updates reservation status to CANCELLED
+     *
+     * @param reservationId The ID of the reservation to cancel
+     * @throws ResponseStatusException with NOT_FOUND if reservation doesn't exist
+     * @throws ResponseStatusException with BAD_REQUEST if reservation has already started
+     */
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found"));

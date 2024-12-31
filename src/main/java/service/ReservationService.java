@@ -24,15 +24,17 @@ public class ReservationService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     private final UserReservationHelperService userReservationHelperService;
+    private final EmailService emailService;
 
     @Autowired
     public ReservationService(ReservationRepository reservationRepository,
                               ProductService productService
-            , ProductRepository productRepository, UserReservationHelperService userReservationHelperService) {
+            , ProductRepository productRepository, UserReservationHelperService userReservationHelperService, EmailService emailService) {
         this.reservationRepository = reservationRepository;
         this.productService = productService;
         this.userReservationHelperService = userReservationHelperService;
         this.productRepository = productRepository;
+        this.emailService = emailService;
     }
 
     public Reservation createReservation(ReservationDTO reservationDTO) {
@@ -54,7 +56,7 @@ public class ReservationService {
         reservation.setUser(userReservationHelperService.getUser(reservationDTO.getUserId()));
         reservation.setStartDate(reservationDTO.getStartDate());
         reservation.setEndDate(reservationDTO.getEndDate());
-        reservation.setStatus(ReservationStatus.PENDING);
+        reservation.setStatus(ReservationStatus.CONFIRMED);//TODO
 
         List<Product> reservedProducts = new ArrayList<>();
         double totalPrice = 0;
@@ -73,6 +75,7 @@ public class ReservationService {
 
         reservation.setProducts(reservedProducts);
         reservation.setTotalPrice(totalPrice);
+        emailService.sendReservationConfirmation(reservation);
 
         return reservationRepository.save(reservation);
     }//TODO
