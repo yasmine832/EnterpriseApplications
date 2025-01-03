@@ -75,7 +75,7 @@ public class EmailService {
                         Dear %s,
                         
                         Your reservation #%d was due to be returned on %s.
-                        Please return the items as soon as possible to avoid additional charges.
+                        Please return the items as soon as possible.
                         
                         Items to return:
                         %s

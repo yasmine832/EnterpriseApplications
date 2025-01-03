@@ -8,6 +8,6 @@ public enum ReservationStatus {
     CONFIRMED,
     CANCELLED,
     ACTIVE,  // During rental period
-    RETURNED, //Items returned successfully
-    OVERDUE, // Items not returned on time //todo
+    RETURNED, //Items returned successfully //TODO
+    OVERDUE, // Items not returned on time
 }
