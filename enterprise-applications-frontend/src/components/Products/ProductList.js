@@ -28,7 +28,7 @@ import isBetween from "dayjs/plugin/isBetween";
 
 
 dayjs.extend(isSameOrBefore);
-dayjs.extend(isBetween); //todo
+dayjs.extend(isBetween); //todoo
 
 //todo split in productcard and productmodal
 
