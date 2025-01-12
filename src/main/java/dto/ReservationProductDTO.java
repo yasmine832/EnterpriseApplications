@@ -3,6 +3,7 @@ package dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 @Schema(description = "DTO for product quantity in a reservation request")
 public class ReservationProductDTO {
@@ -14,6 +15,10 @@ public class ReservationProductDTO {
     @Min(value = 1, message = "Quantity must be at least 1")
     private int quantity;
 
+    @Schema(description = "Cost per day.", example = "50.0")
+    @NotNull(message = "Price is required")
+    @PositiveOrZero
+    private double dailyRentalPrice;
 
     public Long getProductId() {
         return productId;
@@ -30,5 +35,15 @@ public class ReservationProductDTO {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+    public double getDailyRentalPrice() {
+        return dailyRentalPrice;
+    }
+
+    public void setDailyRentalPrice(double dailyRentalPrice) {
+        this.dailyRentalPrice = dailyRentalPrice;
+    }
+
+
 }
 

@@ -3,9 +3,11 @@ package config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,41 +26,48 @@ public class SecurityConfig {
     @Bean // access control
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())// todo enable
+                .csrf(csrf -> csrf.disable())// todo
+
+                .cors(Customizer.withDefaults())
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/auth/register").permitAll()
-                        .requestMatchers("/api/products").permitAll() // allow all
+                        .requestMatchers("/api/products/**").permitAll() // allow all
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                        .anyRequest().authenticated() //restrict any other endpoint
+                       .anyRequest().authenticated() //restrict any other endpoint
+                               ///.anyRequest().permitAll() // TODO
                        // .requestMatchers("/api/**").hasRole("USER") //by role
                         //todo
                 )
+
                 .formLogin(form -> form
-                        //.loginPage("/api/auth/login"))//todo for custom
-                        .defaultSuccessUrl("/api/auth/current", true) //Todoo "/home"
+                        .loginProcessingUrl("/login")
+                        .loginPage("/login")
+
+                        .defaultSuccessUrl("/api/auth/current", false)
                         .failureUrl("/login?error=true")
                 )
 
 
                 // logout behavior
                 .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .logoutSuccessUrl("/api/auth/login")
+                        .logoutUrl("/logout")
+                        //.logoutSuccessUrl("/login")
                         // Remove the session cookie from client browser
                         .deleteCookies("JSESSIONID") //springs default session cookie name
                         // Clear  server-side session data
                         .invalidateHttpSession(true)//to ensure no session data remains after logout
                 )
 
-                // Session management configuration
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)  // Create session when needed
-                        .invalidSessionUrl("/api/auth/login")  // Redirect on invalid session
-                        .maximumSessions(1)  // Prevent multiple logins
-                        .maxSessionsPreventsLogin(false)  // New login expires old session
-                );
+
+        // Session management configuration
+                 .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)  // Create session when needed
+               // .invalidSessionUrl("/api/auth/login")  // Redirect on invalid session
+                .maximumSessions(1)  // Prevent multiple logins
+                .maxSessionsPreventsLogin(false)  // New login expires old session
+        );
+
 
         return http.build();
     }

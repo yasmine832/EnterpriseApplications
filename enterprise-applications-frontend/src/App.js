@@ -1,42 +1,46 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import './App.css';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { CssBaseline } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import ProductList from './components/Products/ProductList';
+import {CartProvider} from "./components/Cart/CartContext";
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Cart from './components/Cart/Cart';
 
-function App() {
+import {AuthProvider} from "./components/Auth/Authcontext"
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+import Navigation from "./components/Navigation";
+//themeprovider
 
-  //initialize state variable to hold lsit of messages fetched from backend
-  const [messages, setMessages] = useState([]);
-
-
-    useEffect(() => {
-      //fetch data from the backend
-        const fetchMessages = async () => {
-            try {
-                const response = await axios.get("http://localhost:8080/api/hello/")  // use axios to make get request to api/hello endpoint on spring boot backend
-                setMessages(response.data)// set the fetched data (response.data) to the message state
-            } catch(error) {
-                console.error("Error fetching data:", error)
-            }
-    };
-
-    fetchMessages(); // Call fetchMessages on component mount
-    }, []); // Empty dependency array ensures the effect runs only once on mount
 
 
 
-    //render messages
-  return (
-      <div className="App">
-        <header className="App-header">
-          <h1>Hello World Messages</h1>
-          <ul>
-            {messages.map(msg => ( //map over the messages array and render each message in a ul element
-                <li key={msg.id}>{msg.message}</li>
-            ))}
-          </ul>
-        </header>
-      </div>
-  );
+function App() {
+    return (
+
+        <AuthProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <CartProvider>
+                <CssBaseline />
+                <BrowserRouter>
+                    <Navigation/>
+                    <Routes>
+                        <Route path="/" element={<ProductList />} />
+                        <Route path="/cart" element={
+                            <ProtectedRoute>
+                                <Cart />
+                            </ProtectedRoute>
+                        } />
+                    </Routes>
+                </BrowserRouter>
+            </CartProvider>
+        </LocalizationProvider>
+            </AuthProvider>
+
+
+    );
 }
+
 
 export default App;
